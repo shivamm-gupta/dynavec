@@ -140,7 +140,7 @@ def test_dynamodb_cache_stats():
         def __init__(self, table):
             self._table = table
 
-        def resource(self, name, region_name=None):
+        def resource(self, name, region_name=None, config=None):
             fake_table = self._table
 
             class Resource:

@@ -199,6 +199,7 @@ cfg = DynavecConfig(
     over_fetch=4,                 # candidate multiplier when reranking
     top_k_page_size=50,           # optional client-side stream batch size
     max_workers=8,                # thread pool for parallel I/O
+    max_pool_connections=10,      # connections retained per AWS connection pool
     auto_provision=True,
 )
 """) + """
@@ -211,6 +212,7 @@ cfg = DynavecConfig(
 <tr><td><code>over_fetch</code></td><td>How many extra candidates to pull before reranking/rescoring.</td></tr>
 <tr><td><code>top_k_page_size</code></td><td>Client-side stream hydration batch. <code>None</code> (default) uses native S3 Vectors pages (at most 100). Does not change the service page size.</td></tr>
 <tr><td><code>max_workers</code>, <code>parallel_writes</code></td><td>Thread-pool <a href="concurrency.html">concurrency</a> controls.</td></tr>
+<tr><td><code>max_pool_connections</code></td><td>Positive integer; defaults to 10 (botocore's default). Connections retained per AWS connection pool.</td></tr>
 </table>
 """)
 
@@ -479,12 +481,17 @@ a thread pool gives real parallelism without an async rewrite. Batched writes fa
 results = db.search_many(["q1", "q2", "q3"], top_k=5, namespace="kb")
 
 # tune the pool
-cfg = DynavecConfig(..., max_workers=16, parallel_writes=True)
+cfg = DynavecConfig(..., max_workers=16, max_pool_connections=16, parallel_writes=True)
 
 # clean up the pool (or use the client as a context manager)
 with Dynavec(cfg, embedder=emb) as db:
     ...
 """) + """
+<p><code>max_pool_connections</code> controls how many connections botocore retains in each
+connection pool; it does not limit concurrent requests. The default is 10. When increasing
+<code>max_workers</code>, consider increasing this setting to reuse connections across workers.
+It applies to S3 Vectors and DynamoDB stores, the graph, DynamoDB cache, and provisioning clients
+created from <code>DynavecConfig</code>. Independently configured embedders and transforms are unaffected.</p>
 <div class="callout">A native asyncio client (<code>aioboto3</code>) is on the roadmap for very high
 concurrency.</div>
 """)

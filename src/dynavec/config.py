@@ -52,6 +52,10 @@ class DynavecConfig:
         Optional client-side chunk size for streamed query pages. ``None``
         (default) yields native Amazon S3 Vectors pages (at most 100 vectors).
         Does not change the service page size.
+    max_pool_connections:
+        Maximum connections retained per botocore connection pool. Defaults to
+        10, matching botocore. Applies to the stores, graph, DynamoDB cache, and
+        provisioning clients created from this configuration.
     """
 
     vector_bucket: str
@@ -80,7 +84,16 @@ class DynavecConfig:
     auto_provision: bool = False
     dynamodb_billing_mode: Literal["PAY_PER_REQUEST", "PROVISIONED"] = "PAY_PER_REQUEST"
 
+    # AWS connection reuse
+    max_pool_connections: int = 10
+
     def __post_init__(self) -> None:
+        if (
+            isinstance(self.max_pool_connections, bool)
+            or not isinstance(self.max_pool_connections, int)
+            or self.max_pool_connections <= 0
+        ):
+            raise ValueError("max_pool_connections must be a positive integer")
         if self.dimension <= 0:
             raise ValueError("dimension must be a positive integer")
         if self.distance_metric not in ("cosine", "euclidean"):

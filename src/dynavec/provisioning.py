@@ -10,6 +10,8 @@ Everything is safe to call repeatedly; existing resources are left as-is.
 
 from __future__ import annotations
 
+from botocore.config import Config
+
 from .config import TEXT_METADATA_KEY, DynavecConfig
 from .exceptions import ProvisioningError
 
@@ -22,7 +24,11 @@ def ensure_vector_bucket(config: DynavecConfig, boto_session=None) -> None:
     import boto3
 
     session = boto_session or boto3.Session()
-    s3v = session.client("s3vectors", region_name=config.region)
+    s3v = session.client(
+        "s3vectors",
+        region_name=config.region,
+        config=Config(max_pool_connections=config.max_pool_connections),
+    )
     try:
         s3v.create_vector_bucket(vectorBucketName=config.vector_bucket)
     except Exception as exc:  # noqa: BLE001
@@ -35,7 +41,11 @@ def ensure_index(config: DynavecConfig, boto_session=None) -> None:
     import boto3
 
     session = boto_session or boto3.Session()
-    s3v = session.client("s3vectors", region_name=config.region)
+    s3v = session.client(
+        "s3vectors",
+        region_name=config.region,
+        config=Config(max_pool_connections=config.max_pool_connections),
+    )
 
     non_filterable = list(config.non_filterable_keys)
     if config.store_text_in_s3vectors and TEXT_METADATA_KEY not in non_filterable:
@@ -63,7 +73,11 @@ def ensure_table(config: DynavecConfig, boto_session=None) -> None:
     import boto3
 
     session = boto_session or boto3.Session()
-    ddb = session.client("dynamodb", region_name=config.region)
+    ddb = session.client(
+        "dynamodb",
+        region_name=config.region,
+        config=Config(max_pool_connections=config.max_pool_connections),
+    )
 
     try:
         create_kwargs = {

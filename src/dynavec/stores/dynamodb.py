@@ -15,6 +15,8 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
+from botocore.config import Config
+
 from ..config import DynavecConfig
 from ..utils import KEY_SEPARATOR, encode_key_component, retry
 
@@ -54,7 +56,11 @@ class DynamoDBStore:
 
         session = boto_session or boto3.Session()
         self._config = config
-        self._ddb = session.resource("dynamodb", region_name=config.region)
+        self._ddb = session.resource(
+            "dynamodb",
+            region_name=config.region,
+            config=Config(max_pool_connections=config.max_pool_connections),
+        )
         self._table = self._ddb.Table(config.table)
 
     @staticmethod

@@ -23,6 +23,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 
 import numpy as np
+from botocore.config import Config
 
 from .exceptions import MissingDependencyError
 from .models import SearchResult
@@ -200,7 +201,11 @@ class DynamoDBCache(BaseCache):
         import boto3
 
         session = boto_session or boto3.Session()
-        self._table = session.resource("dynamodb", region_name=config.region).Table(config.table)
+        self._table = session.resource(
+            "dynamodb",
+            region_name=config.region,
+            config=Config(max_pool_connections=config.max_pool_connections),
+        ).Table(config.table)
         self.ttl_seconds = ttl_seconds
 
     @staticmethod

@@ -86,6 +86,7 @@ cfg = DynavecConfig(
     over_fetch=4,                 # candidate multiplier when reranking
     top_k_page_size=50,           # optional client-side stream batch size
     max_workers=8,                # thread pool for parallel I/O
+    max_pool_connections=10,      # connections retained per AWS connection pool
     auto_provision=True,
 )</code></pre>
 <h2>Key parameters</h2>
@@ -97,6 +98,7 @@ cfg = DynavecConfig(
 <tr><td><code>over_fetch</code></td><td>How many extra candidates to pull before reranking/rescoring.</td></tr>
 <tr><td><code>top_k_page_size</code></td><td>Client-side stream hydration batch. <code>None</code> (default) uses native S3 Vectors pages (at most 100). Does not change the service page size.</td></tr>
 <tr><td><code>max_workers</code>, <code>parallel_writes</code></td><td>Thread-pool <a href="concurrency.html">concurrency</a> controls.</td></tr>
+<tr><td><code>max_pool_connections</code></td><td>Positive integer; defaults to 10 (botocore's default). Connections retained per AWS connection pool.</td></tr>
 </table>
 
       <div class="doc__next"><a href="quickstart.html"><span>Previous</span>Quickstart</a><a href="embeddings.html" style="text-align:right"><span>Next</span>Embeddings</a></div>

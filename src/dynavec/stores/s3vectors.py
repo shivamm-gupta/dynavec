@@ -12,6 +12,7 @@ from collections.abc import Iterator
 from typing import Any
 
 import numpy as np
+from botocore.config import Config
 
 from ..config import DynavecConfig
 from ..utils import retry
@@ -36,7 +37,11 @@ class S3VectorsStore:
 
         session = boto_session or boto3.Session()
         self._config = config
-        self._client = session.client("s3vectors", region_name=config.region)
+        self._client = session.client(
+            "s3vectors",
+            region_name=config.region,
+            config=Config(max_pool_connections=config.max_pool_connections),
+        )
 
     @retry()
     def _put_batch(self, payload: list[dict]) -> None:
